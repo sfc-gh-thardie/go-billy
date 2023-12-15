@@ -1,6 +1,8 @@
 package chroot
 
 import (
+	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -239,4 +241,13 @@ func newFile(fs billy.Filesystem, f billy.File, filename string) billy.File {
 
 func (f *file) Name() string {
 	return f.name
+}
+
+// Function needed while billy.File doesn't have io.WriterAt so memfs WriterAt is accessible.
+func (f *file) WriteAt(p []byte, off int64) (int, error) {
+	w, ok := f.File.(io.WriterAt)
+	if !ok {
+		return 0, fmt.Errorf("file does not conform to writerAt")
+	}
+	return w.WriteAt(p, off)
 }
